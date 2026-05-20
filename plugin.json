@@ -1,0 +1,12 @@
+{
+  "name": "pagerduty",
+  "description": "PagerDuty operational intelligence for GitHub — pre-commit risk scoring and Skills management",
+  "version": "1.0.0",
+  "author": {
+    "name": "PagerDuty",
+    "email": "support@pagerduty.com"
+  },
+  "license": "Apache-2.0",
+  "agents": "agents/",
+  "skills": "skills/"
+}
