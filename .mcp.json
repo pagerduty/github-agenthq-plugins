@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "pagerduty": {
+      "type": "http",
+      "url": "https://mcp.pagerduty.com/mcp",
+      "headers": {
+        "Authorization": "Token token=${PAGERDUTY_API_KEY}"
+      }
+    },
+    "pagerduty-advance": {
+      "type": "http",
+      "url": "https://mcp.pagerduty.com/pagerduty-advance-mcp",
+      "headers": {
+        "Authorization": "Token token=${PAGERDUTY_API_KEY}"
+      }
+    }
+  }
+}
