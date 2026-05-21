@@ -2,19 +2,6 @@
 name: pagerduty
 description: PagerDuty operational intelligence — pre-commit risk scoring and Skills management for AI agents
 tools: ["bash", "view", "edit"]
-mcp-servers:
-  pagerduty:
-    type: http
-    url: https://mcp.pagerduty.com/mcp
-    tools: ["*"]
-    headers:
-      Authorization: "Token token=${PAGERDUTY_API_KEY}"
-  pagerduty-advance:
-    type: http
-    url: https://mcp.pagerduty.com/pagerduty-advance-mcp
-    tools: ["*"]
-    headers:
-      Authorization: "Token token=${PAGERDUTY_API_KEY}"
 ---
 
 # PagerDuty Agent
