@@ -16,7 +16,7 @@ If the call fails with a transport, auth, or "tool not found" error, STOP and te
 ```
 PagerDuty MCP server is not available. This skill requires it.
 
-The Agentic App configuration needs PAGERDUTY_API_KEY in its environment.
+The Agentic App configuration needs COPILOT_MCP_PAGERDUTY_API_KEY in its environment.
 Check the app's settings, then retry once the variable is set.
 ```
 
