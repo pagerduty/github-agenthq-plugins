@@ -7,6 +7,17 @@ You are performing a pre-commit risk assessment. Follow these steps precisely an
 
 ## Step 0: Pre-flight checks
 
+Before doing anything else, verify that the required MCP tools are available.
+
+### 0a-pre: Determine mode
+
+Before anything else, check how this skill was invoked:
+
+1. If the user explicitly passed `--branch`, mentioned "assess the branch", "check the branch", or otherwise asked for a branch-level assessment: set `BRANCH_MODE=true`. Treat any remaining text as the PagerDuty service name (may be empty — that is fine).
+2. Otherwise: set `BRANCH_MODE=false`.
+
+Carry `BRANCH_MODE` forward through all subsequent steps.
+
 ### 0a: Verify PagerDuty MCP connectivity
 
 Call `pagerduty-list_services` with `query: "test"`. This is a connectivity check.
@@ -22,20 +33,55 @@ Check the app's settings, then retry once the variable is set.
 
 Do NOT proceed without PagerDuty MCP. Do NOT fall back to a degraded assessment — the entire point of this skill is PagerDuty incident correlation.
 
-### 0b: Verify changes exist
+### 0b: Determine assessment mode
 
-Run `git diff --stat` and `git diff --cached --stat` via `bash` to check for uncommitted changes (unstaged and staged).
+If `BRANCH_MODE=true` (set in Step 0a-pre):
+- Skip directly to **Step 0c: Base branch detection**. Do not check for uncommitted changes.
 
-If both are empty, run `git log -1 --oneline` and tell the user:
+If `BRANCH_MODE=false`:
+- Run `git diff --stat` and `git diff --cached --stat` via `bash`.
+- **If either has output** (uncommitted changes exist): proceed with the existing uncommitted-changes assessment (Steps 1–6). After presenting the final assessment in Step 6, offer the branch follow-up as described in **Step 6b** below.
+- **If both are empty**: auto-switch to branch mode.
+  - Run `git rev-parse --abbrev-ref HEAD` to get the current branch name.
+  - If the current branch is `main` or `master`, tell the user:
+
+    ```
+    No uncommitted changes detected, and you're already on the base branch (main/master).
+    There is nothing to assess.
+    ```
+
+    Then STOP.
+  - Otherwise: set `BRANCH_MODE=true` and continue to **Step 0c: Base branch detection**. Tell the user briefly: "No uncommitted changes found — switching to branch mode."
+
+### 0c: Base branch detection (branch mode only)
+
+This step runs only when `BRANCH_MODE=true`.
+
+Detect the base branch by trying the following in order — stop at the first that resolves cleanly:
+
+1. **GitHub MCP (preferred):** Get the repo owner and name from `git remote get-url origin` via `bash` (parse from SSH or HTTPS URL). Call `github-list_pull_requests` with `owner`, `repo`, `head` set to `<owner>:<current-branch>`, and `state: "open"`. If one or more PRs are returned, use the `base.ref` field of the first result as the base branch.
+2. **GitHub CLI fallback:** Run `gh pr view --json baseRefName --jq '.baseRefName' 2>/dev/null` via `bash`. If it returns a non-empty string, that is the base branch.
+3. **Upstream tracking branch:** Run `git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null` via `bash`. If it returns something like `origin/main`, strip the remote prefix (`origin/`) to get the base branch name.
+4. **Remote branch scan:** Check which of `main`, `master`, `develop` exist as remote branches: `git branch -r | grep -E 'origin/(main|master|develop)$'`. Use the first match found.
+5. **Ask the user:** If none of the above resolve, ask the user conversationally: "Which branch should I compare against? (e.g. main, master, develop)"
+
+**Guard — current branch IS the base:** After resolving the base, run `git rev-parse --abbrev-ref HEAD` to get the current branch name. If it matches the base branch name, tell the user:
 
 ```
-No uncommitted changes detected. The most recent commit is:
-<commit hash and message>
-
-This skill analyzes uncommitted changes. Make some changes first, or tell me explicitly to assess the last commit instead.
+You're already on the base branch (<base>) — there's no branch diff to assess.
 ```
 
-Then STOP. Do not analyze committed history unprompted.
+Then STOP.
+
+**Guard — no commits ahead of base:** Run `git log <base>..HEAD --oneline` via `bash`. If the output is empty, tell the user:
+
+```
+No commits found ahead of <base> — nothing to assess in branch mode.
+```
+
+Then STOP.
+
+Store the resolved base branch name as `BASE_BRANCH` for use in Steps 4a and 6.
 
 ## Step 1: Resolve service mapping
 
@@ -43,7 +89,7 @@ Determine the PagerDuty service ID for this repository. Follow the steps **in or
 
 ### 1a: Use explicit argument (highest priority)
 
-If the user passed a service name or ID with the invocation, use it immediately — **do not check the cache or catalog first**.
+If the user passed a service name or ID with the invocation (the cleaned value from Step 0a-pre, after stripping `--branch` if present), use it immediately — **do not check the cache or catalog first**.
 
 Call `pagerduty-list_services` with the user-supplied value as the query.
 
@@ -53,7 +99,7 @@ Call `pagerduty-list_services` with the user-supplied value as the query.
 
 ### 1b: Check cached configuration
 
-If no explicit argument was provided, read `.claude/risk-config.json` via `view`. If it exists and contains `pagerduty.serviceId`, validate it by calling `pagerduty-get_service` with that ID.
+If no explicit argument was provided, read `.pagerduty/pagerduty-risk-config.json` via `view`. If it exists and contains `pagerduty.serviceId`, validate it by calling `pagerduty-get_service` with that ID.
 
 - Call succeeds → use the service, display its name to the user, and skip to Step 2.
 - Call fails (service not found or API error) → discard the cached config, warn the user, and continue to Step 1c.
@@ -76,9 +122,9 @@ If none of the above resolved a service:
 
 ### 1e: Persist configuration
 
-If the service was resolved via the explicit argument (Step 1a), **do not write or update `.claude/risk-config.json`** — the argument is a one-time override, not a permanent mapping.
+If the service was resolved via the explicit argument (Step 1a), **do not write or update `.pagerduty/pagerduty-risk-config.json`** — the argument is a one-time override, not a permanent mapping.
 
-Otherwise, once a service ID is resolved, write `.claude/risk-config.json` (create the `.claude/` directory first if it does not exist):
+Otherwise, once a service ID is resolved, write `.pagerduty/pagerduty-risk-config.json` (create the `.pagerduty/` directory first if it does not exist):
 
 ```json
 {
@@ -121,15 +167,16 @@ If there are no active incidents, note that briefly and continue.
 
    **Limit handling:** the API caps results at 1000 incidents. If exactly 1000 are returned, the history is partial — note this in the assessment and state the actual date range covered (timestamp of the oldest incident returned).
 
-2. `pagerduty-list_incidents` for the service over the last 90 days, filtered to **low urgency** (same date range, `urgencies: ["low"]`). Include all statuses. Same limit handling.
+2. `pagerduty-list_incidents` for the service over the last 90 days, filtered to **low urgency** (same date range, `urgencies: ["low"]`). Include all statuses. 
+
+    Apply the same limit handling as above independently for this call.
 
 3. `pagerduty-list_service_change_events` for the service. **Deduplicate** change events by `summary + timestamp` before analyzing — the API often returns 5–6 identical entries for the same deploy.
 
 For incidents that warrant fetching notes, use the high-urgency list from call 1 directly — no keyword guessing. **Cap notes fetching at 10 incidents** (most recent first). If the high-urgency list has more than 10, note how many were skipped.
 
-Summarize:
-
-- Total incident count over 90 days (high + low, noting any partial results due to the 1000 cap)
+From the collected data, summarize:
+- Total incident count over 90 days: high-urgency count (from call 1) + low-urgency count (from call 2), noting if either is partial due to the 1000-incident cap
 - Severity distribution (high vs low)
 - Recency of the most recent resolved incident
 - Common patterns in incident titles or notes (repeated keywords, affected components)
@@ -141,12 +188,23 @@ Summarize:
 
 ### 4a: Gather current changes
 
+**If `BRANCH_MODE=false` (uncommitted changes mode):**
+
 Run via `bash`:
 
-- `git diff --stat` (summary of unstaged changes)
-- `git diff --cached --stat` (staged changes)
-- `git diff --name-only` and `git diff --cached --name-only` (changed file list)
-- `git diff` and `git diff --cached` (full diff content — if very large, focus on `--stat` and file names)
+- `git diff --stat` — summary of unstaged changes
+- `git diff --cached --stat` — summary of staged changes
+- `git diff --name-only` and `git diff --cached --name-only` — list of changed files
+- `git diff` and `git diff --cached` — full diff content (if very large, focus on `--stat` and file names)
+
+**If `BRANCH_MODE=true` (branch mode):**
+
+Run the following via `bash` (substituting `BASE_BRANCH` with the value resolved in Step 0c):
+
+- `git diff <BASE_BRANCH>...HEAD --stat` — summary of all changes introduced by this branch
+- `git diff <BASE_BRANCH>...HEAD --name-only` — list of changed files
+- `git diff <BASE_BRANCH>...HEAD` — full diff content (if very large, focus on `--stat` and file names)
+- `git log <BASE_BRANCH>..HEAD --oneline` — list of commits included (for commit count in the output header)
 
 ### 4b: Gather recent commit history
 
@@ -192,12 +250,25 @@ Score bar — filled (█) and empty (░) blocks:
 
 ## Step 6: Present the assessment
 
-Output a compact, structured risk assessment. Be concise — one line per finding, no filler. Use this format exactly:
+Output a compact, structured risk assessment. Be concise — one line per finding, no filler.
+
+**If `BRANCH_MODE=false`**, use this header line:
 
 ```
 PRE-COMMIT RISK ASSESSMENT
 Service: <service-name> (<service-id>) | Changes: <N> files (+<additions>, -<deletions>)
+```
 
+**If `BRANCH_MODE=true`**, use this header line:
+
+```
+PRE-COMMIT RISK ASSESSMENT
+Service: <service-name> (<service-id>) | Branch: <current-branch> → <BASE_BRANCH> | Commits: <N> | Changes: <X> files (+<Y>, -<Z>)
+```
+
+Then continue with the rest of the output template exactly as follows:
+
+```
 RISK SCORE: <N>/5 [<LEVEL>] <score-bar>
 
 Active incidents: <"None" or one-line summary per incident>
@@ -232,3 +303,22 @@ Guidelines:
 - If there are active incidents related to the areas being changed, that is the most critical finding — call it out and recommend coordinating with incident responders.
 - For scores 0–2, the recommendation can be a single sentence.
 - For scores 3+, include specific actionable guidance.
+
+## Step 6b: Offer branch assessment (uncommitted mode only)
+
+This step runs only when `BRANCH_MODE=false` (i.e., the assessment in Steps 1–6 was based on uncommitted changes).
+
+Run `git rev-parse --abbrev-ref HEAD` via `bash` to get the current branch name. If it is `main` or `master`, skip this step entirely — there is no branch to offer.
+
+Otherwise, ask the user conversationally:
+
+> "Want to also assess the full branch against its base? This covers all committed changes on this branch, as a reviewer would see them."
+
+If the user says yes:
+1. Set `BRANCH_MODE=true`.
+2. Run Step 0c (base branch detection) to resolve `BASE_BRANCH`.
+3. Run Steps 4a, 4b, and 4c again using the branch diff.
+4. Run Steps 5 and 6 again to produce a second risk assessment. Label the output header clearly with `(Branch assessment)` after the service name to distinguish it from the first report.
+5. After presenting the branch assessment, STOP. Do not re-offer Step 6b.
+
+If the user says no: end the session.
