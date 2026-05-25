@@ -8,11 +8,7 @@ PagerDuty's operational intelligence plugin for the [GitHub Copilot](https://git
 
 | Skill | What it does |
 | --- | --- |
-| [`create-pagerduty-skill`](#create-pagerduty-skill) | Create or update PagerDuty skills for AI agents through guided interview |
-| [`investigate`](#investigate) | Multi-turn SRE Agent investigation for a PagerDuty incident |
-| [`on-call-handoff`](#on-call-handoff) | Generate an on-call incident summary or shift handoff using PagerDuty data |
-| [`pre-commit-risk-scoring`](#pre-commit-risk-scoring) | Assess pre-commit risk by correlating PagerDuty incidents with current code changes |
-
+| `create-pagerduty-skill` | Create or update PagerDuty skills for AI agents through guided interview |\n| `investigate` | Multi-turn SRE Agent investigation for a PagerDuty incident |\n| `on-call-handoff` | Generate an on-call incident summary or shift handoff using PagerDuty data |\n| `pre-commit-risk-scoring` | Assess pre-commit risk by correlating PagerDuty incidents with current code changes |\n
 ## Prerequisites
 
 - A working [GitHub Copilot CLI](https://docs.github.com/copilot) installation

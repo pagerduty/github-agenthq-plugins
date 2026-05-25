@@ -20,4 +20,4 @@ You bring PagerDuty operational intelligence into the developer workflow. Route 
 
 ## Authentication
 
-Both MCP servers expect the `PAGERDUTY_API_KEY` environment variable to be set. Refer the user to https://support.pagerduty.com/main/docs/api-access-keys if the variable is missing or returns 401.
+Both MCP servers expect the `COPILOT_MCP_PAGERDUTY_API_KEY` environment variable to be set. Refer the user to https://support.pagerduty.com/main/docs/api-access-keys if the variable is missing or returns 401.

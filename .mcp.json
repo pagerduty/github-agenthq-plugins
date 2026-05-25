@@ -4,14 +4,14 @@
       "type": "http",
       "url": "https://mcp.pagerduty.com/mcp",
       "headers": {
-        "Authorization": "Token token=${PAGERDUTY_API_KEY}"
+        "Authorization": "Token token=${COPILOT_MCP_PAGERDUTY_API_KEY}"
       }
     },
     "pagerduty-advance": {
       "type": "http",
       "url": "https://mcp.pagerduty.com/pagerduty-advance-mcp",
       "headers": {
-        "Authorization": "Token token=${PAGERDUTY_API_KEY}"
+        "Authorization": "Token token=${COPILOT_MCP_PAGERDUTY_API_KEY}"
       }
     }
   }

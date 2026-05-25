@@ -21,7 +21,7 @@ This skill requires the PagerDuty Advance MCP server to create and manage skills
 PagerDuty Skills is currently in Early Access (EA). To get access:
 1. Request PagerDuty Skills EA: https://www.pagerduty.com/early-access/
 2. Request PagerDuty Advance MCP/API EA: https://support.pagerduty.com/main/changelog/pagerduty-advance-mcpapi-support-is-now-in-early-access-for-advance-customers
-3. Once approved, confirm the Agentic App's environment has PAGERDUTY_API_KEY set.
+3. Once approved, confirm the Agentic App's environment has COPILOT_MCP_PAGERDUTY_API_KEY set.
 4. Retry the request.
 ```
 
@@ -519,7 +519,7 @@ Call `pagerduty-advance-update_skill_tool` with parameters:
    ❌ API Error: {error_message}
 
    Possible causes:
-   - PAGERDUTY_API_KEY not set or invalid in the Agentic App environment
+   - COPILOT_MCP_PAGERDUTY_API_KEY not set or invalid in the Agentic App environment
    - Account does not have Early Access (requires both PagerDuty Skills EA and Advance MCP/API EA)
      - Skills EA: https://www.pagerduty.com/early-access/
      - Advance MCP/API EA: https://support.pagerduty.com/main/changelog/pagerduty-advance-mcpapi-support-is-now-in-early-access-for-advance-customers
