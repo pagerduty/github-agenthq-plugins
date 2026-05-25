@@ -18,6 +18,7 @@ PagerDuty's operational intelligence plugin for the [GitHub Copilot](https://git
 - A working [GitHub Copilot CLI](https://docs.github.com/copilot) installation
 - A PagerDuty API token, exposed to the harness as `PAGERDUTY_API_KEY` (see [Where to get a token](#where-to-get-a-pagerduty-api-token))
 - For `create-pagerduty-skill`: enrollment in both [PagerDuty Skills EA](https://www.pagerduty.com/early-access/) and PagerDuty Advance MCP/API EA
+- For `investigate`: access to PagerDuty Advance MCP (`PAGERDUTY_API_KEY` must grant Advance access)
 
 ## Install
 
@@ -31,7 +32,7 @@ Verify:
 copilot plugin list                 # should list PagerDuty/github-agenthq-plugins
 # In an interactive Copilot session:
 /agent                              # confirms the PagerDuty main agent loaded
-/skills list                        # confirms both skills loaded
+/skills list                        # confirms all skills loaded
 ```
 
 ## Usage
@@ -41,22 +42,6 @@ Once installed and wrapped in an Agentic App, the plugin is invokable via the Ap
 - **@-mention** the App in an issue, PR, or discussion to start a session
 - **Assign** an issue to the App for autonomous triage
 - **Trigger** it from Mission Control
-
-### Triggering pre-commit-risk-scoring
-
-Ask the agent about risk before committing or pushing:
-
-> "Run a pre-commit risk check on this branch"
-> "Is this change risky?"
-> "Compare these changes to recent PagerDuty incidents on `<service-name>`"
-
-The skill resolves your repo to a PagerDuty service through a fallback chain (explicit argument → cached config → Backstage `catalog-info.yaml` annotation → repo-name auto-detection → user prompt) and returns:
-
-- Active incidents on the mapped service
-- 90-day incident history summary
-- File-level and structural risk signals in the diff
-- Correlation findings between current changes and past incidents
-- A risk score (0 = no risk, 5 = critical) with recommendations
 
 ### Triggering create-pagerduty-skill
 
@@ -74,9 +59,60 @@ The skill walks you through:
 5. Name + description suggestions, validated against API constraints
 6. Immediate deployment to the PagerDuty platform
 
+### Triggering investigate
+
+Ask the agent to investigate a PagerDuty incident:
+
+> "Investigate incident Q3AHWAR33KUK3G"
+> "What caused incident #971097?"
+> "Root cause analysis for this incident"
+
+The skill opens a multi-turn SRE Agent session:
+
+- Resolves the incident ID (alphanumeric or numeric; lists active incidents if none provided)
+- Returns a structured summary: what happened, root cause, and recommended actions
+- Maintains session context across follow-up questions — deployment correlation, similar past incidents, log links — without reloading context each turn
+- Optionally saves the full conversation transcript to `./on-call-reports/sre-<id>_<date>.md`
+
+Requires PagerDuty Advance MCP access (see [Prerequisites](#prerequisites)).
+
+### Triggering on-call-handoff
+
+Ask the agent for an on-call summary or shift handoff:
+
+> "Give me an on-call handoff for the payments team"
+> "Summarize the last 7 days of incidents"
+> "What happened on-call this week?"
+
+Optional arguments: `[team_name] [timeframe]` — e.g. `payments 7 days`, `platform 2 weeks`.
+
+The skill:
+
+- Resolves your team's escalation policies and services from PagerDuty (cached after first run in `~/on-call-handoff/config.json`)
+- Fetches active incidents and all incidents in the window in parallel
+- Returns a structured summary: Active, Incident Trends, Watch List, Recommended Actions
+- Adapts format to timeframe: ≤14 days → handoff-focused (Active first), >14 days → trend-focused (Incident Trends first)
+- Offers to save to `./on-call-reports/<team>_<date>.md` or bridge to `investigate` for deep analysis on a specific incident
+
+### Triggering pre-commit-risk-scoring
+
+Ask the agent about risk before committing or pushing:
+
+> "Run a pre-commit risk check on this branch"
+> "Is this change risky?"
+> "Compare these changes to recent PagerDuty incidents on `<service-name>`"
+
+The skill resolves your repo to a PagerDuty service through a fallback chain (explicit argument → cached config → Backstage `catalog-info.yaml` annotation → repo-name auto-detection → user prompt) and returns:
+
+- Active incidents on the mapped service
+- 90-day incident history summary
+- File-level and structural risk signals in the diff
+- Correlation findings between current changes and past incidents
+- A risk score (0 = no risk, 5 = critical) with recommendations
+
 ## Authentication
 
-Both skills authenticate to PagerDuty via `PAGERDUTY_API_KEY`. The token is passed as `Authorization: Token token=${PAGERDUTY_API_KEY}` on every MCP request.
+All skills authenticate to PagerDuty via `PAGERDUTY_API_KEY`. The token is passed as `Authorization: Token token=${PAGERDUTY_API_KEY}` on every MCP request.
 
 ### Where to get a PagerDuty API token
 
