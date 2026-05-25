@@ -8,8 +8,10 @@ PagerDuty's operational intelligence plugin for the [GitHub Copilot](https://git
 
 | Skill | What it does |
 | --- | --- |
-| `pre-commit-risk-scoring` | Assesses pre-commit risk by correlating PagerDuty incident history with your current git diff. Returns a 0–5 risk score with active incidents, structural risk signals, and actionable recommendations. |
-| `create-pagerduty-skill` | Creates or updates PagerDuty Skills for the SRE Agent through a short guided interview. Skills encode your team's runbooks into structured instructions the agent can follow during incident response. **Early Access** — see [Prerequisites](#prerequisites). |
+| `create-pagerduty-skill` | Create or update PagerDuty skills for AI agents through guided interview |
+| `investigate` | Multi-turn SRE Agent investigation for a PagerDuty incident |
+| `on-call-handoff` | Generate an on-call incident summary or shift handoff using PagerDuty data |
+| `pre-commit-risk-scoring` | Assess pre-commit risk by correlating PagerDuty incidents with current code changes |
 
 ## Prerequisites
 
