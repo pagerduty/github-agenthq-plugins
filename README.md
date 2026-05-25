@@ -8,10 +8,10 @@ PagerDuty's operational intelligence plugin for the [GitHub Copilot](https://git
 
 | Skill | What it does |
 | --- | --- |
-| `create-pagerduty-skill` | Create or update PagerDuty skills for AI agents through guided interview |
-| `investigate` | Multi-turn SRE Agent investigation for a PagerDuty incident |
-| `on-call-handoff` | Generate an on-call incident summary or shift handoff using PagerDuty data |
-| `pre-commit-risk-scoring` | Assess pre-commit risk by correlating PagerDuty incidents with current code changes |
+| [`create-pagerduty-skill`](#create-pagerduty-skill) | Create or update PagerDuty skills for AI agents through guided interview |
+| [`investigate`](#investigate) | Multi-turn SRE Agent investigation for a PagerDuty incident |
+| [`on-call-handoff`](#on-call-handoff) | Generate an on-call incident summary or shift handoff using PagerDuty data |
+| [`pre-commit-risk-scoring`](#pre-commit-risk-scoring) | Assess pre-commit risk by correlating PagerDuty incidents with current code changes |
 
 ## Prerequisites
 
@@ -35,15 +35,9 @@ copilot plugin list                 # should list PagerDuty/github-agenthq-plugi
 /skills list                        # confirms all skills loaded
 ```
 
-## Usage
+## create-pagerduty-skill
 
-Once installed and wrapped in an Agentic App, the plugin is invokable via the App's GitHub identity:
-
-- **@-mention** the App in an issue, PR, or discussion to start a session
-- **Assign** an issue to the App for autonomous triage
-- **Trigger** it from Mission Control
-
-### Triggering create-pagerduty-skill
+*Create or update PagerDuty Skills for the SRE Agent.*
 
 Ask the agent to create or update a PagerDuty Skill:
 
@@ -59,7 +53,9 @@ The skill walks you through:
 5. Name + description suggestions, validated against API constraints
 6. Immediate deployment to the PagerDuty platform
 
-### Triggering investigate
+## investigate
+
+*Multi-turn SRE Agent investigation with session continuity.*
 
 Ask the agent to investigate a PagerDuty incident:
 
@@ -76,7 +72,9 @@ The skill opens a multi-turn SRE Agent session:
 
 Requires PagerDuty Advance MCP access (see [Prerequisites](#prerequisites)).
 
-### Triggering on-call-handoff
+## on-call-handoff
+
+*On-call incident summary and shift handoff.*
 
 Ask the agent for an on-call summary or shift handoff:
 
@@ -94,7 +92,9 @@ The skill:
 - Adapts format to timeframe: ≤14 days → handoff-focused (Active first), >14 days → trend-focused (Incident Trends first)
 - Offers to save to `./on-call-reports/<team>_<date>.md` or bridge to `investigate` for deep analysis on a specific incident
 
-### Triggering pre-commit-risk-scoring
+## pre-commit-risk-scoring
+
+*Pre-commit risk assessment correlated with PagerDuty incident history.*
 
 Ask the agent about risk before committing or pushing:
 
