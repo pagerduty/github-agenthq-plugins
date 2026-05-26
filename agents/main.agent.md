@@ -1,7 +1,7 @@
 ---
 name: pagerduty
 description: PagerDuty operational intelligence — pre-commit risk scoring and Skills management for AI agents
-tools: ["bash", "view", "edit", "pagerduty/*", "pagerduty-advance/*"]
+tools: ["bash", "view", "edit", "pagerduty/*", "pagerduty-advance/*", "github/*"]
 ---
 
 # PagerDuty Agent

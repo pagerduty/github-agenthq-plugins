@@ -326,6 +326,9 @@ If the user says no: end the session.
 
 ## Step 7: Post result (GitHub PR context only)
 
-If `GITHUB_EVENT_NAME=pull_request`, use the GitHub MCP tool to post the full
-assessment as a PR comment on the current pull request. The GitHub MCP server
-is pre-installed and authenticated — no additional configuration required.
+If `GITHUB_EVENT_NAME=pull_request`, post the full assessment as a PR comment:
+
+1. Run via `bash`: `echo "$GITHUB_REPOSITORY $GITHUB_REF"` to get the owner/repo and extract the PR number from `refs/pull/<number>/merge`.
+2. Call `github-create_issue_comment` with `owner`, `repo`, `issue_number` (the extracted PR number), and `body` set to the full assessment output from Step 6.
+
+The GitHub MCP server is pre-installed and authenticated — no additional configuration required.
