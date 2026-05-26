@@ -13,10 +13,11 @@ Before doing anything else, verify that the required MCP tools are available.
 
 Before anything else, check how this skill was invoked:
 
-1. If the user explicitly passed `--branch`, mentioned "assess the branch", "check the branch", or otherwise asked for a branch-level assessment: set `BRANCH_MODE=true`. Treat any remaining text as the PagerDuty service name (may be empty — that is fine).
-2. Otherwise: set `BRANCH_MODE=false`.
+1. If `GITHUB_EVENT_NAME=pull_request` is set: set `BRANCH_MODE=true` and `BASE_BRANCH=$GITHUB_BASE_REF`. Skip Step 0b and Step 0c entirely — the PR context already provides everything needed. Treat any user text as the PagerDuty service name (may be empty).
+2. If the user explicitly passed `--branch`, mentioned "assess the branch", "check the branch", or otherwise asked for a branch-level assessment: set `BRANCH_MODE=true`. Treat any remaining text as the PagerDuty service name (may be empty — that is fine).
+3. Otherwise: set `BRANCH_MODE=false`.
 
-Carry `BRANCH_MODE` forward through all subsequent steps.
+Carry `BRANCH_MODE` and `BASE_BRANCH` forward through all subsequent steps.
 
 ### 0a: Verify PagerDuty MCP connectivity
 
