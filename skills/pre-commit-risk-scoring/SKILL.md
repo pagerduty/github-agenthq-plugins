@@ -107,7 +107,7 @@ If no explicit argument was provided, read `.pagerduty/pagerduty-risk-config.jso
 
 ### 1c: Check Backstage catalog
 
-Check for `catalog-info.yaml` in the repository root. Look for the `pagerduty.com/service-id` annotation under `metadata.annotations`. If found, use that service ID.
+Check for `catalog-info.yaml` in the repository root using `view`. Look for the `pagerduty.com/service-id` annotation under `metadata.annotations`. If found, use that service ID.
 
 Validate by calling `pagerduty-get_service` with the literal service ID (e.g. `PAWX771`). **Do NOT pass the ID to `pagerduty-list_services`** — querying by raw UUID returns a 502. Extract the service name from the response. If found, skip to Step 1d.
 
