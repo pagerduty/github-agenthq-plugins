@@ -60,8 +60,8 @@ This step runs only when `BRANCH_MODE=true`.
 
 Detect the base branch by trying the following in order — stop at the first that resolves cleanly:
 
-1. **GitHub MCP (preferred):** Get the repo owner and name from `git remote get-url origin` via `bash` (parse from SSH or HTTPS URL). Call `github-list_pull_requests` with `owner`, `repo`, `head` set to `<owner>:<current-branch>`, and `state: "open"`. If one or more PRs are returned, use the `base.ref` field of the first result as the base branch.
-2. **GitHub CLI fallback:** Run `gh pr view --json baseRefName --jq '.baseRefName' 2>/dev/null` via `bash`. If it returns a non-empty string, that is the base branch.
+1. **GitHub MCP (agent context):** If `GITHUB_ACTIONS=true`, get the repo owner and name from `git remote get-url origin` via `bash` (parse from SSH or HTTPS URL). Call `github-list_pull_requests` with `owner`, `repo`, `head` set to `<owner>:<current-branch>`, and `state: "open"`. If one or more PRs are returned, use the `base.ref` field of the first result as the base branch. Do NOT use `gh` CLI in this context — `api.github.com` is blocked by the agent firewall.
+2. **GitHub CLI (local context):** If `GITHUB_ACTIONS` is not set, run `gh pr view --json baseRefName --jq '.baseRefName' 2>/dev/null` via `bash`. If it returns a non-empty string, that is the base branch.
 3. **Upstream tracking branch:** Run `git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null` via `bash`. If it returns something like `origin/main`, strip the remote prefix (`origin/`) to get the base branch name.
 4. **Remote branch scan:** Check which of `main`, `master`, `develop` exist as remote branches: `git branch -r | grep -E 'origin/(main|master|develop)$'`. Use the first match found.
 5. **Ask the user:** If none of the above resolve, ask the user conversationally: "Which branch should I compare against? (e.g. main, master, develop)"
