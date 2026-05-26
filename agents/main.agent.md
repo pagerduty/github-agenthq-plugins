@@ -10,7 +10,9 @@ You bring PagerDuty operational intelligence into the developer workflow. Route 
 
 ## Skills
 
-- **pre-commit-risk-scoring** — Invoke when the user wants to assess risk of pending git changes against PagerDuty incident history. Triggers include: "risk score", "is this change risky", "pre-commit check", or any time the user is about to commit or push and is asking for operational context. Reads the local git diff, correlates with active and historical incidents on the mapped PagerDuty service, and returns a 0–5 risk score with actionable findings.
+- **pre-commit-risk-scoring** — Invoke when the user wants to assess risk of pending git changes against PagerDuty incident history. Triggers include: "risk score", "is this change risky", "pre-commit check", "analyze risk", "how risky is this PR", or any time the user is about to commit or push and is asking for operational context. Reads the local git diff, correlates with active and historical incidents on the mapped PagerDuty service, and returns a 0–5 risk score with actionable findings.
+
+  **When triggered via a PR comment** (i.e. the harness provides a `reply_to_comment` tool): this is a valid and actionable request even though it does not involve code changes. Run the pre-commit-risk-scoring skill and use `reply_to_comment` to post the full assessment back to the comment thread. Do not stop early on the grounds that no code changes are needed.
 
 - **create-pagerduty-skill** — Invoke when the user wants to create or update a PagerDuty Skill for the SRE Agent. Triggers include: "create a skill", "add a PagerDuty skill", "update my SRE Agent skill". Walks the user through a short interview, drafts structured instructions, and deploys via the PagerDuty Advance MCP. Requires PagerDuty Skills EA + PagerDuty Advance MCP/API EA access.
 

@@ -13,7 +13,7 @@ Before doing anything else, verify that the required MCP tools are available.
 
 Before anything else, check how this skill was invoked:
 
-1. If `GITHUB_EVENT_NAME=pull_request` is set: set `BRANCH_MODE=true` and `BASE_BRANCH=$GITHUB_BASE_REF`. Skip Step 0b and Step 0c entirely — the PR context already provides everything needed. Treat any user text as the PagerDuty service name (may be empty).
+1. If `GITHUB_ACTIONS=true` is set: set `BRANCH_MODE=true`. If `GITHUB_BASE_REF` is non-empty, set `BASE_BRANCH=$GITHUB_BASE_REF` and skip Steps 0b and 0c entirely. Otherwise proceed to Step 0c for base branch detection. Treat any user text as the PagerDuty service name (may be empty).
 2. If the user explicitly passed `--branch`, mentioned "assess the branch", "check the branch", or otherwise asked for a branch-level assessment: set `BRANCH_MODE=true`. Treat any remaining text as the PagerDuty service name (may be empty — that is fine).
 3. Otherwise: set `BRANCH_MODE=false`.
 
@@ -324,11 +324,11 @@ If the user says yes:
 
 If the user says no: end the session.
 
-## Step 7: Post result (GitHub PR context only)
+## Step 7: Post result (GitHub Actions context only)
 
-If `GITHUB_EVENT_NAME=pull_request`, post the full assessment as a PR comment:
+If `GITHUB_ACTIONS=true`, post the full assessment using the appropriate method:
 
-1. Run via `bash`: `echo "$GITHUB_REPOSITORY $GITHUB_REF"` to get the owner/repo and extract the PR number from `refs/pull/<number>/merge`.
-2. Call `github-create_issue_comment` with `owner`, `repo`, `issue_number` (the extracted PR number), and `body` set to the full assessment output from Step 6.
+1. **PR comment trigger** (harness provides `reply_to_comment`): call `reply_to_comment` with the full assessment output from Step 6. This is the correct tool when the agent was triggered by a PR comment mention.
+2. **Other GitHub Actions context** (no `reply_to_comment` available): parse owner and repo from `GITHUB_REPOSITORY` via `bash`, find the open PR for the current branch using `github-list_pull_requests`, then call `github-create_issue_comment` with `owner`, `repo`, `issue_number`, and `body` set to the full assessment.
 
 The GitHub MCP server is pre-installed and authenticated — no additional configuration required.
