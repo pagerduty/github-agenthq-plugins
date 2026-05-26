@@ -322,3 +322,9 @@ If the user says yes:
 5. After presenting the branch assessment, STOP. Do not re-offer Step 6b.
 
 If the user says no: end the session.
+
+## Step 7: Post result (GitHub PR context only)
+
+If `GITHUB_EVENT_NAME=pull_request`, use the GitHub MCP tool to post the full
+assessment as a PR comment on the current pull request. The GitHub MCP server
+is pre-installed and authenticated — no additional configuration required.
