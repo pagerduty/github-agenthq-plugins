@@ -304,6 +304,7 @@ Guidelines:
 - If there are active incidents related to the areas being changed, that is the most critical finding — call it out and recommend coordinating with incident responders.
 - For scores 0–2, the recommendation can be a single sentence.
 - For scores 3+, include specific actionable guidance.
+- **If `GITHUB_ACTIONS=true`**: do NOT output the assessment as conversation text. Store the formatted assessment string and proceed immediately to Step 7 to post it via the comment tool.
 
 ## Step 6b: Offer branch assessment (uncommitted mode only)
 
@@ -329,6 +330,6 @@ If the user says no: end the session.
 If `GITHUB_ACTIONS=true`, post the full assessment using the appropriate method:
 
 1. **PR comment trigger** (harness provides `reply_to_comment`): call `reply_to_comment` with the full assessment output from Step 6. This is the correct tool when the agent was triggered by a PR comment mention.
-2. **Other GitHub Actions context** (no `reply_to_comment` available): parse owner and repo from `GITHUB_REPOSITORY` via `bash`, find the open PR for the current branch using `github-list_pull_requests`, then call `github-create_issue_comment` with `owner`, `repo`, `issue_number`, and `body` set to the full assessment.
+2. **Other GitHub Actions context** (no `reply_to_comment` available): parse owner and repo from `GITHUB_REPOSITORY` via `bash` (e.g. `echo "$GITHUB_REPOSITORY"` returns `owner/repo`). Get the current branch via `git rev-parse --abbrev-ref HEAD`. Call `github-mcp-server-list_pull_requests` with `owner`, `repo`, `head` set to `<owner>:<current-branch>`, and `state: "open"`. Use the `number` field of the first result as the PR number. Then call `github-mcp-server-create_issue_comment` with `owner`, `repo`, `issue_number`, and `body` set to the full assessment.
 
 The GitHub MCP server is pre-installed and authenticated — no additional configuration required.
