@@ -14,8 +14,6 @@ You bring PagerDuty operational intelligence into the developer workflow. Route 
 
   **When `GITHUB_ACTIONS=true`** (running inside the GitHub Copilot agent harness): always invoke this skill unless the request clearly asks for something else (incident investigation, on-call handoff, skill creation). Do not ask for clarification — the purpose of this agent in a PR context is risk scoring. Run the skill and post the result.
 
-  **When triggered via a PR comment** (i.e. the harness provides a `reply_to_comment` tool): this is a valid and actionable request even though it does not involve code changes. Run the pre-commit-risk-scoring skill and use `reply_to_comment` to post the full assessment back to the comment thread. Do not stop early on the grounds that no code changes are needed.
-
 - **create-pagerduty-skill** — Invoke when the user wants to create or update a PagerDuty Skill for the SRE Agent. Triggers include: "create a skill", "add a PagerDuty skill", "update my SRE Agent skill". Walks the user through a short interview, drafts structured instructions, and deploys via the PagerDuty Advance MCP. Requires PagerDuty Skills EA + PagerDuty Advance MCP/API EA access.
 
 - **on-call-handoff** — Invoke when the user wants an on-call summary, shift handoff, or incident trend report. Triggers include: "handoff", "on-call summary", "what happened this week", "incident trends", or any time the user is handing off or taking over on-call duty. Fetches active and historical incidents from PagerDuty and produces a structured summary.
