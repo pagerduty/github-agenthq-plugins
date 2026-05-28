@@ -1,0 +1,6 @@
+# All changes require review by the PagerDuty Advance team.
+# Source of truth for this plugin lives in PagerDuty/agent-plugins-internal;
+# PRs here typically come from the publish flow (see PAG-3862) and must be
+# reviewed against the corresponding internal change.
+
+* @PagerDuty/pd-advance
