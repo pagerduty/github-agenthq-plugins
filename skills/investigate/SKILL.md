@@ -48,8 +48,6 @@ Display the SRE Agent's full response.
 
 If the call times out, retry once with `"Summarize incident [id]."`. If it times out again, tell the user the SRE Agent is unavailable and stop.
 
-**If `GITHUB_ACTIONS=true`**: skip Step 3 and proceed to Step 4.
-
 ## Step 3 — Conversation loop
 
 After displaying each SRE Agent response, ask the user:
@@ -60,9 +58,3 @@ After displaying each SRE Agent response, ask the user:
 **Save**: write the full conversation transcript to `./on-call-reports/sre-[incident-id]_[YYYY-MM-DD_HH-MM].md` via `bash`. Create `./on-call-reports/` if needed. Confirm the path. Continue the loop — the user may ask more questions after saving.
 
 **Done**: exit.
-
-## Step 4 — Post result (GitHub Actions context only)
-
-If `GITHUB_ACTIONS=true`, after displaying the SRE Agent's response, also post it as a PR comment by calling `engine-tools/reply_to_comment` with the full response as the body.
-
-If `engine-tools/reply_to_comment` returns a tool-not-found error or any failure, note the error briefly so the issue can be debugged.
