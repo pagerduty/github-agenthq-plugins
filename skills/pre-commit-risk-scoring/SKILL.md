@@ -304,13 +304,13 @@ Guidelines:
 - If there are active incidents related to the areas being changed, that is the most critical finding — call it out and recommend coordinating with incident responders.
 - For scores 0–2, the recommendation can be a single sentence.
 - For scores 3+, include specific actionable guidance.
-- **If `GITHUB_ACTIONS=true`**: do NOT output the assessment as conversation text. Proceed immediately to Step 7.
+- **If `GITHUB_ACTIONS=true`**: output the assessment as conversation text as normal, then proceed to Step 7.
 
 ## Step 7: Post result (GitHub Actions context only)
 
-If `GITHUB_ACTIONS=true`, you **must** post the assessment by calling `engine-tools/reply_to_comment` with the full formatted assessment as the body. Do not output it as conversation text.
+If `GITHUB_ACTIONS=true`, after outputting the assessment as conversation text, also post it as a PR comment by calling `engine-tools/reply_to_comment` with the full formatted assessment as the body.
 
-If `engine-tools/reply_to_comment` returns a tool-not-found error or any failure, output the assessment as text and include the exact error message so the issue can be debugged.
+If `engine-tools/reply_to_comment` returns a tool-not-found error or any failure, note the error briefly so the issue can be debugged.
 
 ## Step 6b: Offer branch assessment (uncommitted mode only)
 
