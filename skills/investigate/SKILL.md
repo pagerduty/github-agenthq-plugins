@@ -50,11 +50,15 @@ If the call times out, retry once with `"Summarize incident [id]."`. If it times
 
 ## Step 3 — Conversation loop
 
-After displaying each SRE Agent response, ask the user:
-"What would you like to explore next? You can ask a follow-up question, save this conversation to a file, or say done."
+After displaying each SRE Agent response, call `ask_user` with:
+- `question`: "What would you like to explore next?"
+- `choices`: ["Save to file", "Done"]
+- `allow_freeform`: true (the user can type a follow-up question directly)
 
-**Follow-up question**: call `pagerduty-advance-sre_agent_tool` with `incident_id`, `message=<user question>`, and `session_id=<stored>`. Display the result. Ask the same follow-up prompt again.
+Handle each response:
 
-**Save**: write the full conversation transcript to `./on-call-reports/sre-[incident-id]_[YYYY-MM-DD_HH-MM].md` via `bash`. Create `./on-call-reports/` if needed. Confirm the path. Continue the loop — the user may ask more questions after saving.
+**Follow-up question** (freeform input): call `pagerduty-advance-sre_agent_tool` with `incident_id`, `message=<user question>`, and `session_id=<stored>`. Display the result. Ask the same follow-up prompt again.
+
+**Save to file**: write the full conversation transcript to `./on-call-reports/sre-[incident-id]_[YYYY-MM-DD_HH-MM].md` via `bash`. Create `./on-call-reports/` if needed. Confirm the path. Continue the loop — the user may ask more questions after saving.
 
 **Done**: exit.

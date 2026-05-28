@@ -102,8 +102,12 @@ Keep it scannable — one line per item. Omit any section that has nothing to re
 
 ## Step 4 — Follow-up
 
-Ask the user: "Found [N] incidents in [timeframe]. What would you like to do next?" and offer:
+Call `ask_user` with:
+- `question`: "Found [N] incidents in [timeframe]. What would you like to do next?"
+- `choices`: ["Deep analysis with SRE Agent", "Save to file", "Done"]
 
-- **Deep analysis with SRE Agent** — present the incidents from the report as a numbered list for the user to choose from: show triggered/acknowledged incidents first, then notable watch list items, up to 5 total. Include incident number, truncated title, service, and age on each line. Include a final option: **"List all incidents"** — if selected, output every incident from the handoff window as a numbered list (`#[number] [title] — [service] — [age]`) and ask the user to reply with the incident number or ID they want. Once an incident is selected by any path, tell them to use the `investigate` skill with that incident ID for a multi-turn investigation that maintains session context across follow-up questions.
+Handle each response:
+
+- **Deep analysis with SRE Agent** — present the incidents from the report as a numbered list using `ask_user` with choices: show triggered/acknowledged incidents first, then notable watch list items, up to 5 total (include incident number, truncated title, service, and age in each choice label). Include a final choice: **"List all incidents"** — if selected, output every incident from the handoff window as a numbered list (`#[number] [title] — [service] — [age]`) and call `ask_user` again asking which one they want. Once an incident is selected by any path, invoke the `sre-investigate` skill immediately by calling the `skill` tool with `skill: "sre-investigate"`, then follow that skill's instructions using the selected incident ID.
 - **Save to file** — write the summary to `./on-call-reports/[escalation-policy-slug]_[YYYY-MM-DD_HH-MM].md` via `bash`. Create `./on-call-reports/` if it does not exist. Confirm the path to the user.
 - **Done** — finish without saving.
