@@ -4,6 +4,8 @@
 
 PagerDuty's operational intelligence plugin for the [GitHub Copilot](https://github.com/features/copilot) AgentHQ plugin system. Brings PagerDuty incident data and Skills management into your GitHub workflow.
 
+[Install PagerDuty Github App](https://github.com/apps/pagerduty-agent-app)
+
 ## Capabilities
 
 | Skill | What it does |
